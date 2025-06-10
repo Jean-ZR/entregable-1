@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "usuarios")
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -36,8 +35,8 @@ public class Usuario {
     private Rol rol;
 
     // Nota: Cambiamos la relación para que coincida con la BD
-    @OneToOne(fetch = FetchType.LAZY)
-    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "usuario"})
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "empleado_id")
     private Empleado empleado;
     
     public Usuario() {

@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.math.BigDecimal;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "empleados")
@@ -44,9 +45,8 @@ public class Empleado {
     @Column(nullable = false, length = 20)
     private String estado;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "usuario_id")
-    @JsonIgnoreProperties("empleado")
+    @OneToOne(mappedBy = "empleado")
+    @JsonIgnore
     private Usuario usuario;
 
     @Column(name = "fecha_creacion", updatable = false)
