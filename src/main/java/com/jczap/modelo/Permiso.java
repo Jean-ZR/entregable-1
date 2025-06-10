@@ -2,42 +2,40 @@ package com.jczap.modelo;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
-import java.util.HashSet;
-import java.util.Set;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @Entity
-@Table(name = "roles")
+@Table(name = "permisos")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
-public class Rol {
+public class Permiso {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
     
     @Column(nullable = false, unique = true, length = 50)
+    private String codigo;
+    
+    @Column(nullable = false, length = 100)
     private String nombre;
     
     @Column(length = 200)
     private String descripcion;
+    
+    @Column(length = 50)
+    private String categoria;
     
     private Boolean activo = true;
     
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
     
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(
-        name = "rol_permisos",
-        joinColumns = @JoinColumn(name = "rol_id"),
-        inverseJoinColumns = @JoinColumn(name = "permiso_id")
-    )
-    private Set<Permiso> permisos = new HashSet<>();
+    public Permiso() {}
     
-    public Rol() {}
-    
-    public Rol(String nombre, String descripcion) {
+    public Permiso(String codigo, String nombre, String descripcion, String categoria) {
+        this.codigo = codigo;
         this.nombre = nombre;
         this.descripcion = descripcion;
+        this.categoria = categoria;
         this.fechaCreacion = LocalDateTime.now();
     }
     
@@ -45,27 +43,21 @@ public class Rol {
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
     
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
+    
     public String getNombre() { return nombre; }
     public void setNombre(String nombre) { this.nombre = nombre; }
     
     public String getDescripcion() { return descripcion; }
     public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
     
+    public String getCategoria() { return categoria; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+    
     public Boolean getActivo() { return activo; }
     public void setActivo(Boolean activo) { this.activo = activo; }
     
     public LocalDateTime getFechaCreacion() { return fechaCreacion; }
     public void setFechaCreacion(LocalDateTime fechaCreacion) { this.fechaCreacion = fechaCreacion; }
-    
-    public Set<Permiso> getPermisos() { return permisos; }
-    public void setPermisos(Set<Permiso> permisos) { this.permisos = permisos; }
-    
-    // Métodos helper
-    public void addPermiso(Permiso permiso) {
-        this.permisos.add(permiso);
-    }
-    
-    public void removePermiso(Permiso permiso) {
-        this.permisos.remove(permiso);
-    }
 }
