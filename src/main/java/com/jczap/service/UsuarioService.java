@@ -1,5 +1,6 @@
 package com.jczap.service;
 
+import com.jczap.dto.UsuarioStatsDTO;
 import com.jczap.modelo.Usuario;
 import com.jczap.modelo.Rol;
 import com.jczap.repository.UsuarioRepository;
@@ -9,9 +10,13 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.time.LocalDateTime;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class UsuarioService {
+
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioService.class);
 
     @Autowired
     private UsuarioRepository usuarioRepository;
@@ -75,5 +80,27 @@ public class UsuarioService {
 
     public void eliminar(Integer id) {
         usuarioRepository.deleteById(id);
+    }
+
+    public UsuarioStatsDTO obtenerEstadisticas() {
+        List<Usuario> usuarios = usuarioRepository.findAll();
+        logger.info("Total de usuarios encontrados: {}", usuarios.size());
+        
+        long totalUsuarios = usuarios.size();
+        long usuariosActivos = usuarios.stream()
+            .filter(u -> u != null && Boolean.TRUE.equals(u.getActivo()))
+            .count();
+        long usuariosInactivos = totalUsuarios - usuariosActivos;
+        
+        logger.info("Usuarios activos: {}, inactivos: {}", usuariosActivos, usuariosInactivos);
+        
+        UsuarioStatsDTO stats = new UsuarioStatsDTO(
+            totalUsuarios,
+            usuariosActivos,
+            usuariosInactivos
+        );
+        
+        logger.info("Estadísticas generadas: {}", stats);
+        return stats;
     }
 }

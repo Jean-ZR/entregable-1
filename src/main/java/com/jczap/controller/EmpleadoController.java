@@ -1,5 +1,6 @@
 package com.jczap.controller;
 
+import com.jczap.dto.EmpleadoStatsDTO;
 import com.jczap.modelo.Empleado;
 import com.jczap.service.EmpleadoService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,11 +11,14 @@ import jakarta.validation.Valid;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/empleados")
 @CrossOrigin(origins = "*")
 public class EmpleadoController {
+    private static final Logger logger = LoggerFactory.getLogger(EmpleadoController.class);
     
     @Autowired
     private EmpleadoService empleadoService;
@@ -22,6 +26,28 @@ public class EmpleadoController {
     @GetMapping
     public List<Empleado> listarTodos() {
         return empleadoService.listarTodos();
+    }
+    
+    @GetMapping("/stats")
+    public ResponseEntity<?> obtenerEstadisticas() {
+        try {
+            logger.info("Solicitando estadísticas de empleados");
+            EmpleadoStatsDTO stats = empleadoService.obtenerEstadisticas();
+            logger.info("Estadísticas obtenidas: {}", stats);
+            
+            if (stats == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("mensaje", "No se pudieron obtener las estadísticas");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+            
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            logger.error("Error al obtener estadísticas: {}", e.getMessage(), e);
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "Error al obtener estadísticas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
     
     @GetMapping("/{id}")

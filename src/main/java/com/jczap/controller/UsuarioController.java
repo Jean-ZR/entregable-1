@@ -1,5 +1,6 @@
 package com.jczap.controller;
 
+import com.jczap.dto.UsuarioStatsDTO;
 import com.jczap.modelo.Usuario;
 import com.jczap.modelo.Rol;
 import com.jczap.modelo.Empleado;
@@ -12,11 +13,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @RestController
 @RequestMapping("/api/usuarios")
 @CrossOrigin(origins = "*")
 public class UsuarioController {
+    private static final Logger logger = LoggerFactory.getLogger(UsuarioController.class);
     
     @Autowired
     private UsuarioService usuarioService;
@@ -24,6 +28,28 @@ public class UsuarioController {
     @GetMapping
     public List<Usuario> listarTodos() {
         return usuarioService.listarTodos();
+    }
+    
+    @GetMapping("/stats")
+    public ResponseEntity<?> obtenerEstadisticas() {
+        try {
+            logger.info("Solicitando estadísticas de usuarios");
+            UsuarioStatsDTO stats = usuarioService.obtenerEstadisticas();
+            logger.info("Estadísticas obtenidas: {}", stats);
+            
+            if (stats == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("mensaje", "No se pudieron obtener las estadísticas");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+            }
+            
+            return ResponseEntity.ok(stats);
+        } catch (Exception e) {
+            logger.error("Error al obtener estadísticas: {}", e.getMessage(), e);
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "Error al obtener estadísticas: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
     
     @GetMapping("/{id}")
