@@ -37,9 +37,9 @@ public class RolService {
         rol.setDescripcion(rolRequest.getDescripcion());
         rol.setActivo(rolRequest.getActivo());
         
-        if (rolRequest.getPermisos() != null && !rolRequest.getPermisos().isEmpty()) {
-            List<Permiso> permisos = permisoRepository.findByCodigoIn(rolRequest.getPermisos());
-            rol.setPermisos(new HashSet<>(permisos));
+        if (rolRequest.getPermisoIds() != null && !rolRequest.getPermisoIds().isEmpty()) {
+            Set<Permiso> permisos = new HashSet<>(permisoRepository.findAllById(rolRequest.getPermisoIds()));
+            rol.setPermisos(permisos);
         }
         
         return rolRepository.save(rol);
@@ -54,11 +54,9 @@ public class RolService {
         rol.setDescripcion(rolRequest.getDescripcion());
         rol.setActivo(rolRequest.getActivo());
         
-        // Actualizar permisos
-        rol.getPermisos().clear();
-        if (rolRequest.getPermisos() != null && !rolRequest.getPermisos().isEmpty()) {
-            List<Permiso> permisos = permisoRepository.findByCodigoIn(rolRequest.getPermisos());
-            rol.setPermisos(new HashSet<>(permisos));
+        if (rolRequest.getPermisoIds() != null) {
+            Set<Permiso> permisos = new HashSet<>(permisoRepository.findAllById(rolRequest.getPermisoIds()));
+            rol.setPermisos(permisos);
         }
         
         return rolRepository.save(rol);
@@ -68,18 +66,31 @@ public class RolService {
         rolRepository.deleteById(id);
     }
     
-    // Método para convertir Rol a RolResponse
     public RolResponse toResponse(Rol rol) {
+        if (rol == null) {
+            return null;
+        }
+        
         RolResponse response = new RolResponse();
         response.setId(rol.getId());
         response.setNombre(rol.getNombre());
         response.setDescripcion(rol.getDescripcion());
         response.setActivo(rol.getActivo());
         
-        List<String> codigosPermisos = rol.getPermisos().stream()
-            .map(Permiso::getCodigo)
-            .collect(Collectors.toList());
-        response.setPermisos(codigosPermisos);
+        if (rol.getPermisos() != null) {
+            Set<RolResponse.PermisoResponse> permisosResponse = rol.getPermisos().stream()
+                .map(permiso -> {
+                    RolResponse.PermisoResponse permisoResponse = new RolResponse.PermisoResponse();
+                    permisoResponse.setId(permiso.getId());
+                    permisoResponse.setNombre(permiso.getNombre());
+                    permisoResponse.setCodigo(permiso.getCodigo());
+                    permisoResponse.setDescripcion(permiso.getDescripcion());
+                    permisoResponse.setCategoria(permiso.getCategoria());
+                    return permisoResponse;
+                })
+                .collect(Collectors.toSet());
+            response.setPermisos(permisosResponse);
+        }
         
         return response;
     }

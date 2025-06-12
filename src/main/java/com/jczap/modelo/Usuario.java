@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import com.jczap.modelo.Rol;
+
 @Entity
 @Table(name = "usuarios")
 public class Usuario {
