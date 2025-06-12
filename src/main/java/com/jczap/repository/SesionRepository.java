@@ -12,4 +12,5 @@ import java.util.List;
 public interface SesionRepository extends JpaRepository<Sesion, Integer> {
     Optional<Sesion> findByToken(String token);
     List<Sesion> findByUsuario(Usuario usuario);
+    List<Sesion> findByUsuarioId(Integer usuarioId);
 }
