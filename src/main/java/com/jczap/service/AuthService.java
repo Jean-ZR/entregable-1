@@ -26,25 +26,29 @@ public class AuthService {
     @Autowired
     private RolRepository rolRepository;
 
-    public Sesion login(String username, String password, String ip, String userAgent) throws Exception {
-        System.out.println("Intento de login para usuario: " + username);
+    public Sesion login(String usernameOrEmail, String password, String ip, String userAgent) throws Exception {
+        System.out.println("Intento de login para usuario/email: " + usernameOrEmail);
 
-        if (username == null || username.trim().isEmpty()) {
-            throw new Exception("El nombre de usuario no puede estar vacío");
+        if (usernameOrEmail == null || usernameOrEmail.trim().isEmpty()) {
+            throw new Exception("El nombre de usuario o email no puede estar vacío");
         }
 
-        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(username);
+        Optional<Usuario> usuarioOpt = usuarioRepository.findByUsername(usernameOrEmail);
 
         if (usuarioOpt.isEmpty()) {
-            System.out.println("Usuario no encontrado en la base de datos: " + username);
-            throw new Exception("Usuario no encontrado");
+            // Si no se encuentra por username, intentar por email
+            usuarioOpt = usuarioRepository.findByEmail(usernameOrEmail);
+            if (usuarioOpt.isEmpty()) {
+                System.out.println("Usuario/Email no encontrado en la base de datos: " + usernameOrEmail);
+                throw new Exception("Usuario no encontrado");
+            }
         }
 
         Usuario usuario = usuarioOpt.get();
         System.out.println("Usuario encontrado: " + usuario.getUsername());
 
         if (!PasswordUtils.checkPassword(password, usuario.getPassword())) {
-            System.out.println("Contraseña incorrecta para usuario: " + username);
+            System.out.println("Contraseña incorrecta para usuario: " + usuario.getUsername());
             throw new Exception("Contraseña incorrecta");
         }
 
@@ -59,7 +63,7 @@ public class AuthService {
         sesion.setActiva(true);
 
         Sesion sesionGuardada = sesionRepository.save(sesion);
-        System.out.println("Sesión creada exitosamente para usuario: " + username);
+        System.out.println("Sesión creada exitosamente para usuario: " + usuario.getUsername());
 
         return sesionGuardada;
     }
