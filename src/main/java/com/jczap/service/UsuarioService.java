@@ -7,9 +7,9 @@ import com.jczap.repository.UsuarioRepository;
 import com.jczap.repository.RolRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.time.LocalDateTime;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,8 +64,7 @@ public class UsuarioService {
         }
 
         // Encriptar contraseña
-        BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-        usuario.setPassword(encoder.encode(usuario.getPassword()));
+        usuario.setPassword(usuario.getPassword());
 
         // Establecer fechas
         usuario.setFechaCreacion(LocalDateTime.now());
@@ -74,8 +73,34 @@ public class UsuarioService {
         return usuarioRepository.save(usuario);
     }
 
-    public void actualizar(Usuario usuario) {
-        usuarioRepository.save(usuario);
+    @Transactional
+    public Usuario actualizar(Integer id, Usuario usuarioActualizado) {
+        logger.info("Actualizando usuario con ID: {}", id);
+        
+        Usuario usuarioExistente = usuarioRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+        
+        // Actualizar campos básicos
+        if (usuarioActualizado.getUsername() != null) {
+            usuarioExistente.setUsername(usuarioActualizado.getUsername());
+        }
+        if (usuarioActualizado.getEmail() != null) {
+            usuarioExistente.setEmail(usuarioActualizado.getEmail());
+        }
+        if (usuarioActualizado.getActivo() != null) {
+            usuarioExistente.setActivo(usuarioActualizado.getActivo());
+        }
+        if (usuarioActualizado.getRol() != null) {
+            usuarioExistente.setRol(usuarioActualizado.getRol());
+        }
+        
+        // Manejar la contraseña
+        if (usuarioActualizado.getPassword() != null && !usuarioActualizado.getPassword().isEmpty()) {
+            usuarioExistente.setPassword(usuarioActualizado.getPassword());
+        }
+        
+        logger.info("Usuario actualizado exitosamente: {}", usuarioExistente.getUsername());
+        return usuarioRepository.save(usuarioExistente);
     }
 
     public void eliminar(Integer id) {

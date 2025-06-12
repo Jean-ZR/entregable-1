@@ -148,9 +148,21 @@ public class UsuarioController {
     }
     
     @PutMapping("/{id}")
-    public void actualizar(@PathVariable("id") Integer id, @RequestBody Usuario usuario) {
-        usuario.setId(id);
-        usuarioService.actualizar(usuario);
+    public ResponseEntity<?> actualizar(@PathVariable("id") Integer id, @RequestBody Usuario usuario) {
+        try {
+            logger.info("Recibida solicitud de actualización para usuario ID: {}", id);
+            logger.info("Datos recibidos: {}", usuario);
+            
+            Usuario usuarioActualizado = usuarioService.actualizar(id, usuario);
+            logger.info("Usuario actualizado exitosamente: {}", usuarioActualizado);
+            
+            return ResponseEntity.ok(usuarioActualizado);
+        } catch (Exception e) {
+            logger.error("Error al actualizar usuario: {}", e.getMessage(), e);
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "Error al actualizar usuario: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
     
     @DeleteMapping("/{id}")
